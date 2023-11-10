@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 
+
 def validate_video_extension(value):
     video_ext_list = [
         "3g2",
@@ -39,3 +40,4 @@ def validate_video_extension(value):
 
     if not value.name.endswith(tuple(video_ext_list)):
         return False
+    return True
