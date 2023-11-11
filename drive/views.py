@@ -39,6 +39,7 @@ user_service_personal = UserPersonalService()
 folder_service = FolderService()
 file_service = MongoFileService()
 
+
 @require_POST
 @jwt_login_required
 def upload_file(request):
@@ -46,7 +47,8 @@ def upload_file(request):
     form_data = request.POST
     file = request.FILES['file']  # Adjust the field name as needed
     filename = file.name
-    parent = None if form_data.get("parent", None) == "/" else form_data.get("parent", None)
+    parent = None if form_data.get(
+        "parent", None) == "/" else form_data.get("parent", None)
     parent_list = form_data.get("parentList") or "/"
     personal_file = form_data.get("personal-file") is not None
     has_thumbnail = False
@@ -75,7 +77,7 @@ def upload_file(request):
     add_to_storage_size(user, file.size, personal_file)
     url = generate_s3_presigned_url(user, current_file.s3_id)
     data = json.loads(serializers.serialize('json', [current_file]))
-    return JsonResponse(data={"success": "File Uploaded", "url":url, "data": data})
+    return JsonResponse(data={"success": "File Uploaded", "url": url, "data": data})
 
 
 @require_GET
@@ -91,6 +93,7 @@ def get_list(request):
         print(f"Get File List Error File Route: {str(e)}")
         return HttpResponse(status=500)
 
+
 @require_POST
 @jwt_login_required
 def delete_file(request):
@@ -98,21 +101,22 @@ def delete_file(request):
         user = request.user
         file_id = request.POST.get('id')
         file_service.delete_file(user, file_id)
-        return JsonResponse(data={"success":f"File with id {file_id} deleted"})
+        return JsonResponse(data={"success": f"File with id {file_id} deleted"})
 
     except Exception as e:
         print(f"Delete File Error File Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
 
+
 @require_GET
 def get_public_download(request, tempToken):
-    try:
-        url = file_service.get_public_download(tempToken)
-        return JsonResponse({"url":url})
-    except Exception as e:
-        print(f"Get Public Download Error File Route: {str(e)}")
-        return HttpResponse(status=500)
+    # try:
+    url = file_service.get_public_download(tempToken)
+    return JsonResponse({"url": url})
+    # except Exception as e:
+    print(f"Get Public Download Error File Route: {str(e)}")
+    return HttpResponse(status=500)
 
 
 def remove_temp_token(request, temp_token, uuid):
@@ -139,6 +143,7 @@ def remove_link(request, id):
         print(f"Remove Public Link Error File Route: {str(e)}")
         return HttpResponse(status=500)
 
+
 @require_GET
 @jwt_login_required
 def make_public(request, id):
@@ -152,6 +157,7 @@ def make_public(request, id):
         print(f"Make Public Error File Route: {str(e)}")
         return HttpResponse(status=500)
 
+
 @require_GET
 def get_public_info(request, tempToken):
     try:
@@ -160,6 +166,7 @@ def get_public_info(request, tempToken):
     except Exception as e:
         print(f"Get Public Info Error File Route: {str(e)}")
         return HttpResponse(status=500)
+
 
 @require_GET
 @jwt_login_required
@@ -172,6 +179,7 @@ def make_one_time_public(request, id):
     except Exception as e:
         print(f"Make One Time Public Link Error File Route: {str(e)}")
         return HttpResponse(status=500)
+
 
 @require_GET
 @jwt_login_required
@@ -186,6 +194,7 @@ def get_file_info(request, id):
         print(f"Get File Info Error File Route: {str(e)}")
         return HttpResponse(status=500)
 
+
 @require_GET
 @jwt_login_required
 def get_quick_list(request):
@@ -196,6 +205,7 @@ def get_quick_list(request):
     except Exception as e:
         print(f"Get Quick List Error File Route: {str(e)}")
         return HttpResponse(status=500)
+
 
 @require_GET
 @jwt_login_required
@@ -213,6 +223,7 @@ def get_download_token(request):
         print(f"Get Download Token Error File Route: {str(e)}")
         return HttpResponse(status=500)
 
+
 @require_GET
 @jwt_login_required
 def get_suggested_list(request):
@@ -227,6 +238,7 @@ def get_suggested_list(request):
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
 
+
 def list_all_s3_keys(bucket_name):
     s3 = boto3.client('s3')
 
@@ -238,18 +250,21 @@ def list_all_s3_keys(bucket_name):
 
     return keys
 
+
 @require_GET
 @jwt_login_required
 def download_file(request, id):
     try:
         user = request.user
         url = file_service.download_file(user, id)
-        return JsonResponse({"url": url})  # Assuming download_file handles the response directly
+        # Assuming download_file handles the response directly
+        return JsonResponse({"url": url})
 
     except Exception as e:
         print(f"Download File Error File Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
+
 
 @require_POST
 @jwt_login_required
@@ -260,12 +275,13 @@ def rename_file(request):
         user_id = request.user.id
         file = file_service.rename_file(user_id, file_id, title)
 
-        return JsonResponse({"success": f"File with id {id} renamed to {title}", "file":file}) 
+        return JsonResponse({"success": f"File with id {id} renamed to {title}", "file": file})
 
     except Exception as e:
         print(f"Rename File Error File Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
+
 
 @require_POST
 @jwt_login_required
@@ -285,12 +301,13 @@ def send_email_share(request):
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
 
+
 @require_POST
 @jwt_login_required
 def move_file(request):
     try:
         file_id = request.POST["id"]
-        parent_id = None if  request.POST['parent'] == "/" else request.POST['parent']
+        parent_id = None if request.POST['parent'] == "/" else request.POST['parent']
         user_id = request.user.id
 
         file_service.move_file(user_id, file_id, parent_id)
@@ -301,6 +318,7 @@ def move_file(request):
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
 
+
 @require_POST
 @jwt_login_required
 def upload_folder(request):
@@ -310,17 +328,19 @@ def upload_folder(request):
             owner_id=request.user.id,
             personal_folder=data.get('personal', False),
             name=data['name'],
-            parent=None if data.get('parent') == "/" else Folder.objects.get(id=data.get('parent')),
-            parent_list=data.get('parent_list',"/")
+            parent=None if data.get(
+                'parent') == "/" else Folder.objects.get(id=data.get('parent')),
+            parent_list=data.get('parent_list', "/")
         )
         folder.save()
         from django.core import serializers
         import json
         folder = json.loads(serializers.serialize('json', [folder]))
-        return JsonResponse({"data":folder})
+        return JsonResponse({"data": folder})
     except Exception as e:
         print(e)
-        return JsonResponse({"error": str(e)}) 
+        return JsonResponse({"error": str(e)})
+
 
 @require_POST
 @jwt_login_required
@@ -333,11 +353,11 @@ def delete_folder(request):
             delete_s3_object(request.user, file.s3_id)
         folder = Folder.objects.filter(owner_id=user_id, id=folder_id).get()
         folder.delete()
-        return JsonResponse({"sucess":f"Folder with id {folder_id} was deleted"})
+        return JsonResponse({"sucess": f"Folder with id {folder_id} was deleted"})
     except Exception as e:
         print(f"Delete Folder Error Folder Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
-        return JsonResponse(status=code, data={"error":str(e)})
+        return JsonResponse(status=code, data={"error": str(e)})
 
 
 @require_GET
@@ -346,14 +366,16 @@ def get_subfolder_full_list(request):
     try:
         user = request.user
         folder_id = request.GET['id']
-        subfolder_list = folder_service.get_subfolder_full_list(user, folder_id)
+        subfolder_list = folder_service.get_subfolder_full_list(
+            user, folder_id)
         print(subfolder_list)
         return JsonResponse(subfolder_list, safe=False)
 
     except Exception as e:
         print(f"Get Subfolder List Error Folder Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
-        return JsonResponse(status=code, data={"error":str(e)})
+        return JsonResponse(status=code, data={"error": str(e)})
+
 
 @require_GET
 @jwt_login_required
@@ -364,12 +386,13 @@ def delete_all(request):
     try:
         user = request.user
         folder_service.delete_all(user)
-        return JsonResponse({"success":"All Folders are deleted"})
+        return JsonResponse({"success": "All Folders are deleted"})
 
     except Exception as e:
         print(f"Delete All Error Folder Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
+
 
 @require_GET
 @jwt_login_required
@@ -384,6 +407,7 @@ def get_info(request, id):
         print(f"Get Info Error Folder Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return JsonResponse(status=code, data={'error': str(e)})
+
 
 @require_GET
 @jwt_login_required
@@ -410,7 +434,7 @@ def get_folder_list(request):
         user = request.user
         query = request.GET
         folder_list = folder_service.get_folder_list(user, query)
-        folder_list = json.loads(serializers.serialize('json',folder_list))
+        folder_list = json.loads(serializers.serialize('json', folder_list))
         return JsonResponse(folder_list, safe=False)
 
     except Exception as e:
@@ -418,13 +442,15 @@ def get_folder_list(request):
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
 
+
 @require_POST
 @jwt_login_required
 def move_folder(request):
     try:
         user_id = request.user.id
         folder_id = request.POST['id']
-        parent = None if request.POST.get('parent',None) == "/" else request.POST.get('parent',None)
+        parent = None if request.POST.get(
+            'parent', None) == "/" else request.POST.get('parent', None)
         folder_service.move_folder(user_id, folder_id, parent)
         return HttpResponse()
 
@@ -432,6 +458,7 @@ def move_folder(request):
         print(f"Move Folder Error Folder Route: {e}")
         code = e.code if hasattr(e, 'code') else 500
         return HttpResponse(status=code)
+
 
 @require_POST
 @jwt_login_required
@@ -441,7 +468,7 @@ def rename_folder(request):
         title = request.POST['title']
         folder_id = request.POST['id']
         folder = folder_service.rename_folder(user_id, folder_id, title)
-        return JsonResponse({"success":"Folder renamed", "data":folder})
+        return JsonResponse({"success": "Folder renamed", "data": folder})
 
     except Exception as e:
         print(f"Rename Folder Error Folder Route: {e}")
