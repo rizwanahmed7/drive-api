@@ -96,8 +96,6 @@ def create_user(request):
                 "name": user.name
             },
         }
-        user.generate_encryption_keys()
-        user.generate_auth_keys()
         response = JsonResponse(data=user_data, status=201)
         create_login_cookie(response, access_token, refresh_token)
 
